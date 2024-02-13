@@ -32,8 +32,5 @@ terraform.rc
 # Ignore local executable binaries that may be generated
 terraform-provider-*
 
-# Ignore directory used for local state locking
-.terraform.lock.hcl
-
 # Add additional files / directories to ignore below this line
 .idea

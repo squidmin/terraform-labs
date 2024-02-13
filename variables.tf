@@ -13,9 +13,9 @@ variable "service_account_email" {
   default = "tekton-pipeline@lofty-root-378503.iam.gserviceaccount.com"
 }
 
-variable "google_application_credentials_path" {
+variable "github_actions_pipeline_credentials_path" {
   type    = string
-  default = "~/.config/gcloud/sa-private-key.json"
+  default = "~/.config/gcloud/gh-actions-pipeline-key.json"
 }
 
 variable "cloud_run_service_name" {
