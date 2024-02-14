@@ -62,7 +62,7 @@ resource "google_artifact_registry_repository" "java17-spring-gradle-bigquery-re
 
   location      = var.region
   repository_id = "java17-spring-gradle-bigquery-reference-test"
-  description   = "Artifact Repository for testing React apps"
+  description   = "Artifact Repository for testing Spring Boot apps"
   format        = "DOCKER"
 
   labels = {
