@@ -13,3 +13,7 @@ output "service_account_email" {
 output "github_actions_pipeline_credentials_path" {
   value = var.github_actions_pipeline_credentials_path
 }
+
+output "admin_credentials_path" {
+  value = var.admin_credentials_path
+}

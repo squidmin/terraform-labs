@@ -18,7 +18,7 @@ variable "github_actions_pipeline_credentials_path" {
   default = "~/.config/gcloud/gh-actions-pipeline-key.json"
 }
 
-#variable "tf_state_gcs_bucket_name" {
-#  type    = string
-#  default = "lofty-root-tf-state"
-#}
+variable "admin_credentials_path" {
+  type = string
+  default = "~/.config/gcloud/sa-private-key.json"
+}

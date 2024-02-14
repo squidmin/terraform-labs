@@ -3,16 +3,16 @@ terraform {
 
   required_providers {
     google-beta = {
-      source = "hashicorp/google-beta"
+      source  = "hashicorp/google-beta"
       version = ">= 3.53.0"
     }
   }
 }
 
 provider "google-beta" {
-  credentials = file(var.github_actions_pipeline_credentials_path)
-  project = var.project_id
-  region = var.region
+  credentials = file(var.admin_credentials_path)
+  project     = var.project_id
+  region      = var.region
 }
 
 terraform {
@@ -28,6 +28,12 @@ resource "google_project_iam_member" "artifact_registry_admin" {
   member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
 }
 
+resource "google_project_iam_member" "gh-actions-pipeline-push-to-artifact-registry" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+}
+
 resource "google_project_iam_member" "artifact_registry_user" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
@@ -37,8 +43,25 @@ resource "google_project_iam_member" "artifact_registry_user" {
 resource "google_artifact_registry_repository" "react-labs-artifact-registry-repository" {
   provider = google-beta
 
+  count = terraform.workspace == "delete-artifact-registry-repos" ? 0 : 1
+
   location      = var.region
   repository_id = "react-labs-test"
+  description   = "Artifact Repository for testing React apps"
+  format        = "DOCKER"
+
+  labels = {
+    environment = "sandbox"
+  }
+}
+
+resource "google_artifact_registry_repository" "java17-spring-gradle-bigquery-reference-artifact-registry-repository" {
+  provider = google-beta
+
+  count = terraform.workspace == "delete-artifact-registry-repos" ? 0 : 1
+
+  location      = var.region
+  repository_id = "java17-spring-gradle-bigquery-reference-test"
   description   = "Artifact Repository for testing React apps"
   format        = "DOCKER"
 
