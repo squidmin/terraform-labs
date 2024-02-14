@@ -42,6 +42,7 @@
        region = "us-central1"  // Change to your preferred region
      }
      ```
+     
 3. **Define Resources**: Define the GCP resources you want to provision in your `main.tf`.
    This could include compute resources, storage buckets, networking components, etc.
 4. **Create Other Terraform Files**:
@@ -63,6 +64,25 @@ This command initializes the Terraform project, downloads the GCP provider, and 
    Terraform will ask for confirmation before proceeding.
    Upon confirmation, Terraform will provision the resources defined in your `main.tf` file in your GCP project.
 
+   > When running `terraform apply`, it's a good practice to save the plan to a file using the `-out` option.
+   > This allows you to review the plan before applying the changes and ensures that the same plan is executed when you later apply the changes.
+   >
+   > Before applying the changes, run:
+   > 
+   > ```
+   > terraform plan -out=tfplan
+   > ```
+   > 
+   > then use
+   > 
+   > ```
+   > terraform apply tfplan
+   > ```
+   > 
+   > to apply the changes using the saved plan.
+   > 
+   > It's a best practice to save the plan before applying changes to your infrastructure.
+
 ## Additional Tips
 
 - **Version Control**: Consider using a version control system like Git to manage your Terraform configurations.
@@ -72,7 +92,7 @@ This command initializes the Terraform project, downloads the GCP provider, and 
   Consider using Terraform Cloud or a remote backend in GCP to store your state file.
 - **Security Practices**: Keep your service account key file secure and never commit it to version control.
   Use environment variables or encrypted secrets management solutions for handling sensitive information.
-- **Modularize Your Configuration**: As your infrastructure frows, consider breaking down your Terraform configuration into mofules.
+- **Modularize Your Configuration**: As your infrastructure grows, consider breaking down your Terraform configuration into mofules.
   Modules allow you to reuse and manage common sets of resources more efficiently.
 
 By following these steps, you'll have set up a basic Terraform configuration for provisioning resources in your GCP project.

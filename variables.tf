@@ -10,7 +10,7 @@ variable "region" {
 
 variable "service_account_email" {
   type    = string
-  default = "tekton-pipeline@lofty-root-378503.iam.gserviceaccount.com"
+  default = "gh-actions-pipeline@lofty-root-378503.iam.gserviceaccount.com"
 }
 
 variable "github_actions_pipeline_credentials_path" {
@@ -18,7 +18,7 @@ variable "github_actions_pipeline_credentials_path" {
   default = "~/.config/gcloud/gh-actions-pipeline-key.json"
 }
 
-variable "cloud_run_service_name" {
-  type    = string
-  default = "java17-spring-gradle-bigquery-reference"
-}
+#variable "tf_state_gcs_bucket_name" {
+#  type    = string
+#  default = "lofty-root-tf-state"
+#}
