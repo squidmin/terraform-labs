@@ -70,6 +70,30 @@ resource "google_artifact_registry_repository" "java17-spring-gradle-bigquery-re
   }
 }
 
+resource "google_service_account" "gh_actions_pipeline" {
+  account_id   = "gh-actions-pipeline"
+  display_name = "GitHub Actions Pipeline"
+  project      = var.project_id
+}
+
+resource "google_project_iam_member" "gh_actions_pipeline_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_service_account" "react-labs-sa" {
+  account_id   = "react-labs-sa"
+  display_name = "React Labs service account"
+  project      = var.project_id
+}
+
 #resource "google_cloud_run_service_iam_member" "invoker" {
 #  location = var.region
 #  project  = var.project_id

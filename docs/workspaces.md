@@ -54,6 +54,15 @@ resource "google_artifact_registry_repository" "example-artifact-registry-reposi
 }
 ```
 
+With this setup:
+
+- In the `delete-artifact-registry-repos` workspace, `count` evaluates to `0`, leading to the deletion of any instances of this resource that Terraform is managing.
+- In any other workspace (e.g., `default`), `count` evaluates to `1`, so **1** instance of the specified resource will be created and managed by Terraform.
+
+Ensure that your use of workspaces and the `count` attribute aligns with your infrastructure management strategy, keeping in minf how Terraform interprets `count` for resource creation and deletion.
+
+---
+
 ## Switching back to the default workspace
 
 To switch back to the default workspace, you can use the following command:
@@ -62,4 +71,4 @@ To switch back to the default workspace, you can use the following command:
 terraform workspace select default
 ```
 
-This command will switch the Terraform context back to the default workspace, allowing you to continue working with the resources in the default workspace.
+This command will switch the Terraform context back to the `default` workspace, allowing you to continue working with the resources in the `default` workspace.
