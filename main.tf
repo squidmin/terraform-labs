@@ -48,6 +48,7 @@ resource "google_compute_backend_bucket" "cdn_backend" {
   project     = var.project_id
   name        = "cdn-backend-bucket"
   bucket_name = google_storage_bucket.amphi_static_content_bucket.name
+  enable_cdn  = true
 
   cdn_policy {
     cache_mode                   = "CACHE_ALL_STATIC"
