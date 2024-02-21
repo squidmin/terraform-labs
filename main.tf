@@ -40,6 +40,14 @@ resource "google_storage_bucket_iam_member" "amphi_static_content_bucket_profess
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
 }
+
+#resource "google_storage_bucket_iam_binding" "amphi_static_content_bucket_public_read" {
+#  bucket = google_storage_bucket.amphi_static_content_bucket.name
+#  role   = "roles/storage.objectViewer"
+#  members = [
+#    "allUsers",
+#  ]
+#}
 /* [END] GCP storage bucket IAM member */
 
 
@@ -126,6 +134,18 @@ resource "google_project_iam_member" "gh_actions_pipeline_push_to_artifact_regis
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
 }
+
+resource "google_project_iam_member" "signed_url_generator_sa_storage_object_viewer" {
+  project = var.project_id
+  role    = "roles/storage.objectViewer"
+  member  = "serviceAccount:${google_service_account.signed_url_generator_sa.email}"
+}
+
+resource "google_project_iam_member" "signed_url_generator_sa_token_creator" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${google_service_account.signed_url_generator_sa.email}"
+}
 /* [END] GCP project IAM member */
 
 
@@ -189,6 +209,21 @@ resource "google_artifact_registry_repository" "token_validator_service_artifact
     environment = "sandbox"
   }
 }
+
+resource "google_artifact_registry_repository" "signed_url_generator_artifact_registry_repository" {
+  provider = google-beta
+
+  count = terraform.workspace == "delete-artifact-registry-repos" ? 0 : 1
+
+  location      = var.region
+  repository_id = "signed-url-generator"
+  description   = "Artifact Repository for Signed URL Generator service"
+  format        = "DOCKER"
+
+  labels = {
+    environment = "sandbox"
+  }
+}
 /* [END] Artifact Registry repositories */
 
 
@@ -216,7 +251,33 @@ resource "google_service_account" "token_validator_service_sa" {
   display_name = "Token validator backend application service account"
   project      = var.project_id
 }
+
+resource "google_service_account" "signed_url_generator_sa" {
+  account_id   = "signed-url-generator-sa"
+  display_name = "GCS signed URL generator backend application service account"
+  project      = var.project_id
+}
 /* [END] GCP service account */
+
+
+/* [START] Google Cloud Run service account */
+#resource "google_cloud_run_service" "signed_url_generator_cloud_run_service" {
+#  project  = var.project_id
+#  name     = "signed-url-generator"
+#  location = var.region
+#
+#  template {
+#    spec {
+#      containers {
+#        image = "${var.region}-docker.pkg.dev/${var.project_id}/signed-url-generator/signed-url-generator:latest"
+#      }
+#      service_account_name = google_service_account.signed_url_generator_sa.email
+#    }
+#  }
+#
+#  autogenerate_revision_name = true
+#}
+/* [END] Google Cloud Run service account */
 
 
 /* [START] GCP Cloud Run service IAM member */
@@ -244,5 +305,23 @@ resource "google_cloud_run_service_iam_member" "cloud_run_token_validator_public
   service  = "token-validator-service"
   role     = "roles/run.invoker"
   member   = "allUsers"
+}
+
+resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_public_invoker" {
+  location = var.region
+  project  = var.project_id
+  service  = "signed-url-generator"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_invoker" {
+  depends_on = [google_service_account.signed_url_generator_sa]
+
+  location = var.region
+  project  = var.project_id
+  service  = "signed-url-generator"
+  role     = "roles/run.invoker"
+  member  = "user:morse.james.r@gmail.com"
 }
 /* [END] GCP Cloud Run service IAM member */
