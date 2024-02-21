@@ -44,3 +44,4 @@ terraform-provider-*
 
 # Add additional files / directories to ignore below this line
 .idea
+.DS_Store
