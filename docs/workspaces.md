@@ -72,3 +72,12 @@ terraform workspace select default
 ```
 
 This command will switch the Terraform context back to the `default` workspace, allowing you to continue working with the resources in the `default` workspace.
+
+---
+
+## Workspaces used in this project
+
+| Name                             | Description                            |
+|----------------------------------|----------------------------------------|
+| `default`                        | Provision all defined resources.       |
+| `delete-artifact-registry-repos` | Delete Artifact Registry repositories. |
