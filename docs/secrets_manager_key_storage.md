@@ -1,10 +1,15 @@
 # Storing service account private key in GCP Secrets Manager
 
-Using Google Cloud Secrets Manager to store and manage your service account key file is a secure approach to handle sensitive information like credentials. This method involves generating a service account key, uploading it to Secrets Manager, and then accessing it from your application or infrastructure as needed. Here's how to do it step-by-step:
+Using Google Cloud Secrets Manager to store and manage your service account key file is a secure approach to handle sensitive information like credentials.
+This method involves generating a service account key, uploading it to Secrets Manager, and then accessing it from your application or infrastructure as needed.
+Here's how to do it step-by-step:
+
+Due to the security implications of storing service account keys in Terraform state files, a more secure approach is to create the service account with Terraform but generate and download the key file using the gcloud CLI:
 
 ### Step 1: Generate the Service Account Key
 
-First, ensure you have a service account for which you want to generate a key. Then, use the `gcloud` CLI to create the key and save it to a file:
+First, ensure you have a service account for which you want to generate a key.
+Then, use the `gcloud` CLI to create the key and save it to a file:
 
 ```sh
 gcloud iam service-accounts keys create service-account-key.json \
@@ -41,7 +46,7 @@ To access the secret from your application running on Google Cloud (e.g., Comput
 
 Here's how to grant the role using `gcloud`:
 
-```sh
+```bash
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
   --member="serviceAccount:YOUR_APPLICATION_SERVICE_ACCOUNT_EMAIL" \
   --role="roles/secretmanager.secretAccessor"
