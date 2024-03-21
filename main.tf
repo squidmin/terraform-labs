@@ -31,6 +31,14 @@ resource "google_storage_bucket" "amphi_static_content_bucket" {
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
 }
+
+#resource "google_storage_bucket" "james_resume_bucket" {
+#  project                     = var.project_id
+#  name                        = "james-resume"
+#  location                    = "US"
+#  storage_class               = "STANDARD"
+#  uniform_bucket_level_access = true
+#}
 /* [END] GCP storage bucket */
 
 
@@ -104,6 +112,12 @@ resource "google_storage_bucket_iam_binding" "professional_portfolio_service_acc
     "allUsers"
   ]
 }
+
+#resource "google_storage_bucket_iam_member" "professional_portfolio_bucket_member" {
+#  bucket = "james-resume"
+#  role   = "roles/storage.objectViewer"
+#  member = "serviceAccount:professional-portfolio-sa@lofty-root-378503.iam.gserviceaccount.com"
+#}
 /* [END] GCP storage bucket IAM binding */
 
 
@@ -119,6 +133,13 @@ resource "google_secret_manager_secret_iam_member" "signed_url_generator_secret_
   secret_id = "professional-portfolio-sa-key"
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:signed-url-generator-sa@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accessor" {
+  project = var.project_id
+  secret_id = "openai-api-key"
+  role    = "roles/secretmanager.secretAccessor"
+  member  = "serviceAccount:itera-backend-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 /* [END] GCP secret accessor */
 
@@ -243,6 +264,21 @@ resource "google_artifact_registry_repository" "signed_url_generator_artifact_re
     environment = "sandbox"
   }
 }
+
+resource "google_artifact_registry_repository" "itera_backend_artifact_registry_repository" {
+  provider = google-beta
+
+  count = terraform.workspace == "delete-artifact-registry-repos" ? 0 : 1
+
+  location      = var.region
+  repository_id = "itera-backend"
+  description   = "Artifact Repository for Itera backend service"
+  format        = "DOCKER"
+
+  labels = {
+    environment = "sandbox"
+  }
+}
 /* [END] Artifact Registry repositories */
 
 
@@ -276,12 +312,19 @@ resource "google_service_account" "signed_url_generator_sa" {
   display_name = "GCS signed URL generator backend application service account"
   project      = var.project_id
 }
+
+resource "google_service_account" "itera_backend_sa" {
+  depends_on = [google_secret_manager_secret_iam_member.itera_backend_secret_accessor]
+  account_id   = "itera-backend-sa"
+  display_name = "Itera backend application service account"
+  project      = var.project_id
+}
 /* [END] GCP service account */
 
 
 /* [START] Google Cloud Run service account */
 /* Defines a resource for deploying a service to Google Cloud Run. */
-/* Prefer using CI/CD pipeline. */
+/* Prefer using GitHub Actions CI/CD pipeline. */
 #resource "google_cloud_run_service" "signed_url_generator_cloud_run_service" {
 #  project  = var.project_id
 #  name     = "signed-url-generator"
@@ -343,6 +386,6 @@ resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_i
   project  = var.project_id
   service  = "signed-url-generator"
   role     = "roles/run.invoker"
-  member   = "user:morse.james.r@gmail.com"
+  member   = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 /* [END] GCP Cloud Run service IAM member */
