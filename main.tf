@@ -31,14 +31,6 @@ resource "google_storage_bucket" "amphi_static_content_bucket" {
   storage_class               = "STANDARD"
   uniform_bucket_level_access = true
 }
-
-#resource "google_storage_bucket" "james_resume_bucket" {
-#  project                     = var.project_id
-#  name                        = "james-resume"
-#  location                    = "US"
-#  storage_class               = "STANDARD"
-#  uniform_bucket_level_access = true
-#}
 /* [END] GCP storage bucket */
 
 
@@ -48,57 +40,7 @@ resource "google_storage_bucket_iam_member" "amphi_static_content_bucket_profess
   role   = "roles/storage.objectViewer"
   member = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
 }
-
-#resource "google_storage_bucket_iam_binding" "amphi_static_content_bucket_public_read" {
-#  bucket = google_storage_bucket.amphi_static_content_bucket.name
-#  role   = "roles/storage.objectViewer"
-#  members = [
-#    "allUsers",
-#  ]
-#}
 /* [END] GCP storage bucket IAM member */
-
-
-/* [START] GCP Compute backend bucket for Cloud CDN */
-#resource "google_compute_backend_bucket" "cdn_backend" {
-#  project     = var.project_id
-#  name        = "cdn-backend-bucket"
-#  bucket_name = google_storage_bucket.amphi_static_content_bucket.name
-#  enable_cdn  = true
-#
-#  cdn_policy {
-#    cache_mode                   = "CACHE_ALL_STATIC"
-#    client_ttl                   = 3600
-#    default_ttl                  = 3600
-#    max_ttl                      = 86400
-#    signed_url_cache_max_age_sec = 0
-#    negative_caching             = true
-#    request_coalescing           = true
-#  }
-#}
-/* [END] GCP Compute backend bucket for Cloud CDN */
-
-
-/* [START] Provision an External HTTPS Load Balancer */
-#resource "google_compute_url_map" "default" {
-#  project         = var.project_id
-#  name            = "url-map"
-#  default_service = google_compute_backend_bucket.cdn_backend.self_link
-#}
-#
-#resource "google_compute_target_http_proxy" "default" {
-#  project = var.project_id
-#  name    = "http-proxy"
-#  url_map = google_compute_url_map.default.self_link
-#}
-#
-#resource "google_compute_global_forwarding_rule" "default" {
-#  project    = var.project_id
-#  name       = "http-content-rule"
-#  target     = google_compute_target_http_proxy.default.self_link
-#  port_range = "80"
-#}
-/* [END] Provision an External HTTPS Load Balancer */
 
 
 /* [START] GCP storage bucket IAM binding */
@@ -112,12 +54,6 @@ resource "google_storage_bucket_iam_binding" "professional_portfolio_service_acc
     "allUsers"
   ]
 }
-
-#resource "google_storage_bucket_iam_member" "professional_portfolio_bucket_member" {
-#  bucket = "james-resume"
-#  role   = "roles/storage.objectViewer"
-#  member = "serviceAccount:professional-portfolio-sa@lofty-root-378503.iam.gserviceaccount.com"
-#}
 /* [END] GCP storage bucket IAM binding */
 
 
@@ -322,37 +258,7 @@ resource "google_service_account" "itera_backend_sa" {
 /* [END] GCP service account */
 
 
-/* [START] Google Cloud Run service account */
-/* Defines a resource for deploying a service to Google Cloud Run. */
-/* Prefer using GitHub Actions CI/CD pipeline. */
-#resource "google_cloud_run_service" "signed_url_generator_cloud_run_service" {
-#  project  = var.project_id
-#  name     = "signed-url-generator"
-#  location = var.region
-#
-#  template {
-#    spec {
-#      containers {
-#        image = "${var.region}-docker.pkg.dev/${var.project_id}/signed-url-generator/signed-url-generator:latest"
-#      }
-#      service_account_name = google_service_account.signed_url_generator_sa.email
-#    }
-#  }
-#
-#  autogenerate_revision_name = true
-#}
-/* [END] Google Cloud Run service account */
-
-
 /* [START] GCP Cloud Run service IAM member */
-#resource "google_cloud_run_service_iam_member" "invoker" {
-#  location = var.region
-#  project  = var.project_id
-#  service  = "java17-spring-gradle-bigquery-reference"
-#  role     = "roles/run.invoker"
-#  member   = "serviceAccount:${var.service_account_email}"
-#}
-
 resource "google_cloud_run_service_iam_member" "cloud_run_token_validator_invoker" {
   depends_on = [google_service_account.professional_portfolio_sa]
 
