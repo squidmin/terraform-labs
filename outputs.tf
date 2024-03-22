@@ -7,7 +7,7 @@ output "region" {
 }
 
 output "service_account_email" {
-  value = var.service_account_email
+  value = var.gh_actions_pipeline_service_account_email
 }
 
 output "github_actions_pipeline_credentials_path" {

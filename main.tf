@@ -47,9 +47,9 @@ resource "google_storage_bucket_iam_member" "amphi_static_content_bucket_profess
 resource "google_storage_bucket_iam_binding" "professional_portfolio_service_account_access" {
   bucket  = google_storage_bucket.amphi_static_content_bucket.name
   role    = "roles/storage.objectViewer"
-#  members = [
-#    "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com",
-#  ]
+  #  members = [
+  #    "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com",
+  #  ]
   members = [
     "allUsers"
   ]
@@ -65,17 +65,40 @@ resource "google_project_iam_member" "signed_url_generator_secret_accessor" {
 }
 
 resource "google_secret_manager_secret_iam_member" "signed_url_generator_secret_accessor" {
-  project = var.project_id
+  project   = var.project_id
   secret_id = "professional-portfolio-sa-key"
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:signed-url-generator-sa@${var.project_id}.iam.gserviceaccount.com"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:signed-url-generator-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 
 resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accessor" {
-  project = var.project_id
+  project   = var.project_id
   secret_id = "openai-api-key"
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:itera-backend-sa@${var.project_id}.iam.gserviceaccount.com"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+
+# Assuming the secret already exists, we use a data source to reference it.
+data "google_secret_manager_secret" "openai_api_key" {
+  secret_id = "openai-api-key"
+  project   = "lofty-root-378503"
+}
+
+resource "google_secret_manager_secret_iam_policy" "policy" {
+  project   = "lofty-root-378503"
+  secret_id = data.google_secret_manager_secret.openai_api_key.secret_id
+
+  policy_data = jsonencode({
+    bindings = [
+      {
+        role    = "roles/secretmanager.secretAccessor"
+        members = [
+          "serviceAccount:${var.itera_backend_service_account_email}",
+        ]
+      }
+    ]
+  })
 }
 /* [END] GCP secret accessor */
 
@@ -91,6 +114,18 @@ resource "google_project_iam_member" "artifact_registry_admin" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
   member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "itera_backend_run_admin" {
+  project = var.project_id
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_artifact_registry_admin" {
+  project = var.project_id
+  role    = "roles/artifactregistry.admin"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
 }
 
 resource "google_project_iam_member" "artifact_registry_user" {
@@ -109,6 +144,18 @@ resource "google_project_iam_member" "gh_actions_pipeline_push_to_artifact_regis
   project = var.project_id
   role    = "roles/artifactregistry.writer"
   member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+}
+
+resource "google_project_iam_member" "itera_backend_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_push_to_artifact_registry" {
+  project = var.project_id
+  role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
 }
 
 resource "google_project_iam_member" "signed_url_generator_sa_storage_object_viewer" {
@@ -250,7 +297,7 @@ resource "google_service_account" "signed_url_generator_sa" {
 }
 
 resource "google_service_account" "itera_backend_sa" {
-  depends_on = [google_secret_manager_secret_iam_member.itera_backend_secret_accessor]
+  depends_on   = [google_secret_manager_secret_iam_member.itera_backend_secret_accessor]
   account_id   = "itera-backend-sa"
   display_name = "Itera backend application service account"
   project      = var.project_id
@@ -295,3 +342,73 @@ resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_i
   member   = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
 }
 /* [END] GCP Cloud Run service IAM member */
+
+
+resource "google_project_iam_binding" "gh_actions_pipeline_container_developer" {
+  project = var.project_id
+  role    = "roles/container.developer"
+
+  members = [
+    "serviceAccount:${var.gh_actions_pipeline_service_account_email}",
+  ]
+}
+
+resource "google_project_iam_binding" "itera_backend_container_developer" {
+  project = var.project_id
+  role    = "roles/container.developer"
+
+  members = [
+    "serviceAccount:${var.itera_backend_service_account_email}",
+  ]
+}
+
+resource "google_project_iam_binding" "gh_actions_pipeline_cluster_admin" {
+  project = var.project_id
+  role    = "roles/container.clusterAdmin"
+
+  members = [
+    "serviceAccount:${var.gh_actions_pipeline_service_account_email}",
+  ]
+}
+
+resource "google_project_iam_binding" "itera_backend_cluster_admin" {
+  project = var.project_id
+  role    = "roles/container.clusterAdmin"
+
+  members = [
+    "serviceAccount:${var.itera_backend_service_account_email}",
+  ]
+}
+
+resource "google_project_iam_binding" "gh_actions_pipeline_service_account_user" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountUser"
+
+  members = [
+    "serviceAccount:${var.gh_actions_pipeline_service_account_email}",
+  ]
+}
+
+resource "google_project_iam_member" "itera_backend_gke_developer" {
+  project = var.project_id
+  role    = "roles/container.developer"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_service_account_token_creator" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_service_account_iam_member" "itera_backend_workload_identity_user" {
+  service_account_id = "projects/${var.project_id}/serviceAccounts/itera-backend-sa@${var.project_id}.iam.gserviceaccount.com"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/itera-backend-k8s-service-account]"
+}
