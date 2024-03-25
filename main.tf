@@ -1,28 +1,3 @@
-terraform {
-  required_version = ">= 0.13"
-
-  required_providers {
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = ">= 3.53.0"
-    }
-  }
-}
-
-provider "google-beta" {
-  credentials = file(var.admin_credentials_path)
-  project     = var.project_id
-  region      = var.region
-}
-
-terraform {
-  backend "gcs" {
-    bucket = "lofty-root-tf-state"
-    prefix = "terraform/state"
-  }
-}
-
-
 /* [START] GCP storage bucket */
 resource "google_storage_bucket" "amphi_static_content_bucket" {
   project                     = var.project_id
@@ -78,7 +53,6 @@ resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accesso
   member    = "serviceAccount:${var.itera_backend_service_account_email}"
 }
 
-
 # Assuming the secret already exists, we use a data source to reference it.
 data "google_secret_manager_secret" "openai_api_key" {
   secret_id = var.openai_api_key_secret_name
@@ -131,7 +105,7 @@ resource "google_project_iam_member" "itera_backend_artifact_registry_admin" {
 resource "google_project_iam_member" "artifact_registry_user" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
-  member  = "user:morse.james.r@gmail.com"
+  member  = "user:${var.project_admin_user_email}"
 }
 
 resource "google_project_iam_member" "gh_actions_pipeline_service_account_user" {
@@ -168,6 +142,24 @@ resource "google_project_iam_member" "signed_url_generator_sa_token_creator" {
   project = var.project_id
   role    = "roles/iam.serviceAccountTokenCreator"
   member  = "serviceAccount:${google_service_account.signed_url_generator_sa.email}"
+}
+
+resource "google_project_iam_member" "itera_backend_gke_developer" {
+  project = var.project_id
+  role    = "roles/container.developer"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_artifact_registry_reader" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+}
+
+resource "google_project_iam_member" "itera_backend_service_account_token_creator" {
+  project = var.project_id
+  role    = "roles/iam.serviceAccountTokenCreator"
+  member  = "serviceAccount:${var.itera_backend_service_account_email}"
 }
 /* [END] GCP project IAM member */
 
@@ -392,27 +384,6 @@ resource "google_project_iam_binding" "gh_actions_pipeline_service_account_user"
 /* [END] Google project IAM binding */
 
 
-/* [START] Google project IAM member */
-resource "google_project_iam_member" "itera_backend_gke_developer" {
-  project = var.project_id
-  role    = "roles/container.developer"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
-}
-
-resource "google_project_iam_member" "itera_backend_artifact_registry_reader" {
-  project = var.project_id
-  role    = "roles/artifactregistry.reader"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
-}
-
-resource "google_project_iam_member" "itera_backend_service_account_token_creator" {
-  project = var.project_id
-  role    = "roles/iam.serviceAccountTokenCreator"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
-}
-/* [END] Google project IAM member */
-
-
 /* [START] Google service account IAM member */
 resource "google_service_account_iam_member" "itera_backend_workload_identity_user" {
   service_account_id = "projects/${var.project_id}/serviceAccounts/${var.itera_backend_service_account_email}"
@@ -420,3 +391,29 @@ resource "google_service_account_iam_member" "itera_backend_workload_identity_us
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/itera-backend-k8s-service-account]"
 }
 /* [END] Google service account IAM member */
+
+
+resource "google_pubsub_topic" "test_topic" {
+  project = var.project_id
+  name = "test-topic"
+}
+
+// Pull subscription
+resource "google_pubsub_subscription" "example_subscription" {
+  project = var.project_id
+  name  = "test-subscription"
+  topic = google_pubsub_topic.test_topic.name
+}
+
+// Push subscription
+#resource "google_pubsub_subscription" "test_subscription" {
+#  name  = "test-subscription"
+#  topic = google_pubsub_topic.test_topic.name
+#
+#  ack_deadline_seconds = 20
+#  // Set to true to use push delivery, false for pull.
+#  push_config {
+#    // For push delivery, specify the endpoint here.
+#    push_endpoint = "http://example.com/push"
+#  }
+#}

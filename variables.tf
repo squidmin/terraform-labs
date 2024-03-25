@@ -8,6 +8,11 @@ variable "region" {
   default = "us-central1"
 }
 
+variable "project_admin_user_email" {
+  type    = string
+  default = "morse.james.r@gmail.com"
+}
+
 variable "gh_actions_pipeline_service_account_email" {
   type    = string
   default = "gh-actions-pipeline@lofty-root-378503.iam.gserviceaccount.com"
