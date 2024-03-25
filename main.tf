@@ -38,7 +38,7 @@ resource "google_storage_bucket" "amphi_static_content_bucket" {
 resource "google_storage_bucket_iam_member" "amphi_static_content_bucket_professional_portfolio_access" {
   bucket = google_storage_bucket.amphi_static_content_bucket.name
   role   = "roles/storage.objectViewer"
-  member = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
+  member = "serviceAccount:${var.professional_portfolio_service_account_email}"
 }
 /* [END] GCP storage bucket IAM member */
 
@@ -61,19 +61,19 @@ resource "google_storage_bucket_iam_binding" "professional_portfolio_service_acc
 resource "google_project_iam_member" "signed_url_generator_secret_accessor" {
   project = var.project_id
   role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:signed-url-generator-sa@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${var.signed_url_generator_service_account_email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "signed_url_generator_secret_accessor" {
   project   = var.project_id
   secret_id = "professional-portfolio-sa-key"
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:signed-url-generator-sa@${var.project_id}.iam.gserviceaccount.com"
+  member    = "serviceAccount:${var.signed_url_generator_service_account_email}"
 }
 
 resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accessor" {
   project   = var.project_id
-  secret_id = "openai-api-key"
+  secret_id = var.openai_api_key_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.itera_backend_service_account_email}"
 }
@@ -81,12 +81,12 @@ resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accesso
 
 # Assuming the secret already exists, we use a data source to reference it.
 data "google_secret_manager_secret" "openai_api_key" {
-  secret_id = "openai-api-key"
-  project   = "lofty-root-378503"
+  secret_id = var.openai_api_key_secret_name
+  project   = var.project_id
 }
 
 resource "google_secret_manager_secret_iam_policy" "policy" {
-  project   = "lofty-root-378503"
+  project   = var.project_id
   secret_id = data.google_secret_manager_secret.openai_api_key.secret_id
 
   policy_data = jsonencode({
@@ -107,25 +107,25 @@ resource "google_secret_manager_secret_iam_policy" "policy" {
 resource "google_project_iam_member" "run_admin" {
   project = var.project_id
   role    = "roles/run.admin"
-  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_service_account.gh_actions_pipeline.email}"
 }
 
 resource "google_project_iam_member" "artifact_registry_admin" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
-  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_service_account.gh_actions_pipeline.email}"
 }
 
 resource "google_project_iam_member" "itera_backend_run_admin" {
   project = var.project_id
   role    = "roles/run.admin"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+  member  = "serviceAccount:${google_service_account.itera_backend_sa.email}"
 }
 
 resource "google_project_iam_member" "itera_backend_artifact_registry_admin" {
   project = var.project_id
   role    = "roles/artifactregistry.admin"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+  member  = "serviceAccount:${google_service_account.itera_backend_sa.email}"
 }
 
 resource "google_project_iam_member" "artifact_registry_user" {
@@ -137,25 +137,25 @@ resource "google_project_iam_member" "artifact_registry_user" {
 resource "google_project_iam_member" "gh_actions_pipeline_service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_service_account.gh_actions_pipeline.email}"
 }
 
 resource "google_project_iam_member" "gh_actions_pipeline_push_to_artifact_registry" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:gh-actions-pipeline@${var.project_id}.iam.gserviceaccount.com"
+  member  = "serviceAccount:${google_service_account.gh_actions_pipeline.email}"
 }
 
 resource "google_project_iam_member" "itera_backend_service_account_user" {
   project = var.project_id
   role    = "roles/iam.serviceAccountUser"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+  member  = "serviceAccount:${google_service_account.itera_backend_sa.email}"
 }
 
 resource "google_project_iam_member" "itera_backend_push_to_artifact_registry" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${var.itera_backend_service_account_email}"
+  member  = "serviceAccount:${google_service_account.itera_backend_sa.email}"
 }
 
 resource "google_project_iam_member" "signed_url_generator_sa_storage_object_viewer" {
@@ -313,7 +313,7 @@ resource "google_cloud_run_service_iam_member" "cloud_run_token_validator_invoke
   project  = var.project_id
   service  = "token-validator-service"
   role     = "roles/run.invoker"
-  member   = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
+  member   = "serviceAccount:${var.professional_portfolio_service_account_email}"
 }
 
 resource "google_cloud_run_service_iam_member" "cloud_run_token_validator_public_invoker" {
@@ -329,7 +329,7 @@ resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_p
   project  = var.project_id
   service  = "signed-url-generator"
   role     = "roles/run.invoker"
-  member   = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
+  member   = "serviceAccount:${var.professional_portfolio_service_account_email}"
 }
 
 resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_invoker" {
@@ -339,11 +339,12 @@ resource "google_cloud_run_service_iam_member" "cloud_run_signed_url_generator_i
   project  = var.project_id
   service  = "signed-url-generator"
   role     = "roles/run.invoker"
-  member   = "serviceAccount:professional-portfolio-sa@${var.project_id}.iam.gserviceaccount.com"
+  member   = "serviceAccount:${var.professional_portfolio_service_account_email}"
 }
 /* [END] GCP Cloud Run service IAM member */
 
 
+/* [START] Google project IAM binding */
 resource "google_project_iam_binding" "gh_actions_pipeline_container_developer" {
   project = var.project_id
   role    = "roles/container.developer"
@@ -388,7 +389,10 @@ resource "google_project_iam_binding" "gh_actions_pipeline_service_account_user"
     "serviceAccount:${var.gh_actions_pipeline_service_account_email}",
   ]
 }
+/* [END] Google project IAM binding */
 
+
+/* [START] Google project IAM member */
 resource "google_project_iam_member" "itera_backend_gke_developer" {
   project = var.project_id
   role    = "roles/container.developer"
@@ -406,9 +410,13 @@ resource "google_project_iam_member" "itera_backend_service_account_token_creato
   role    = "roles/iam.serviceAccountTokenCreator"
   member  = "serviceAccount:${var.itera_backend_service_account_email}"
 }
+/* [END] Google project IAM member */
 
+
+/* [START] Google service account IAM member */
 resource "google_service_account_iam_member" "itera_backend_workload_identity_user" {
-  service_account_id = "projects/${var.project_id}/serviceAccounts/itera-backend-sa@${var.project_id}.iam.gserviceaccount.com"
+  service_account_id = "projects/${var.project_id}/serviceAccounts/${var.itera_backend_service_account_email}"
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[default/itera-backend-k8s-service-account]"
 }
+/* [END] Google service account IAM member */
