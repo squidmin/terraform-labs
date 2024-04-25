@@ -13,6 +13,11 @@ variable "project_admin_user_email" {
   default = "morse.james.r@gmail.com"
 }
 
+variable "default_compute_engine_service_account" {
+  type    = string
+  default = "9644524330-compute@developer.gserviceaccount.com"
+}
+
 variable "gh_actions_pipeline_service_account_email" {
   type    = string
   default = "gh-actions-pipeline@lofty-root-378503.iam.gserviceaccount.com"
@@ -57,8 +62,8 @@ variable "gke_cluster_name" {
 }
 
 variable "openai_api_key_secret_name" {
-    description = "The name of the secret that stores the OpenAI API key"
-    default     = "openai-api-key"
+  description = "The name of the secret that stores the OpenAI API key"
+  default     = "openai-api-key"
 }
 
 variable "gemini_api_key_secret_name" {

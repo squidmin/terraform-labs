@@ -78,6 +78,24 @@ resource "google_storage_bucket_iam_binding" "professional_portfolio_service_acc
 /* [END] GCP storage bucket IAM binding */
 
 
+/* [START] GCP secret manager */
+// Define a new secret with automatic replication.
+#resource "google_secret_manager_secret" "my_secret" {
+#  secret_id = "my-secret"
+#
+#  replication {
+#    automatic = true
+#  }
+#}
+
+// Add a secret version.
+#resource "google_secret_manager_secret_version" "my_secret_version" {
+#  secret      = google_secret_manager_secret.my_secret.id
+#  secret_data = "my super secret data"
+#}
+/* [END GCP secret manager] */
+
+
 /* [START] GCP secret accessor */
 resource "google_project_iam_member" "project_admin_secret_accessor" {
   project = var.project_id
@@ -105,11 +123,18 @@ resource "google_secret_manager_secret_iam_member" "itera_backend_secret_accesso
   member    = "serviceAccount:${var.itera_backend_service_account_email}"
 }
 
-resource "google_secret_manager_secret_iam_member" "gemini_api_backend_secret_accessor" {
+resource "google_secret_manager_secret_iam_member" "gemini_api_backend_secret_accessor_1" {
   project   = var.project_id
   secret_id = var.gemini_api_key_secret_name
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.gemini_api_backend_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "gemini_api_backend_secret_accessor_2" {
+  project   = var.project_id
+  secret_id = var.gemini_api_key_secret_name
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "user:${var.project_admin_user_email}"
 }
 
 # Assuming the secret already exists, we use a data source to reference it.
@@ -148,11 +173,26 @@ resource "google_secret_manager_secret_iam_policy" "gemini_api_key_policy" {
       {
         role    = "roles/secretmanager.secretAccessor"
         members = [
-          "serviceAccount:${var.gemini_api_backend_service_account_email}",
+          "user:${var.project_admin_user_email}",
+          "serviceAccount:${var.default_compute_engine_service_account}",
+          "serviceAccount:${var.gemini_api_backend_service_account_email}"
         ]
       }
     ]
   })
+}
+
+resource "google_secret_manager_secret_iam_binding" "secret_accessor" {
+  project   = var.project_id
+  secret_id = "gemini-api-key"
+
+  role = "roles/secretmanager.secretAccessor"
+
+  members = [
+    "user:${var.project_admin_user_email}",
+    "serviceAccount:${var.default_compute_engine_service_account}",
+    "serviceAccount:${var.gemini_api_backend_service_account_email}"
+  ]
 }
 /* [END] GCP secret accessor */
 
