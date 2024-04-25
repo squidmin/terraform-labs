@@ -13,7 +13,7 @@ variable "project_admin_user_email" {
   default = "morse.james.r@gmail.com"
 }
 
-variable "default_compute_engine_service_account" {
+variable "default_compute_engine_service_account_email" {
   type    = string
   default = "9644524330-compute@developer.gserviceaccount.com"
 }

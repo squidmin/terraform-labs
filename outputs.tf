@@ -6,7 +6,11 @@ output "region" {
   value = var.region
 }
 
-output "service_account_email" {
+output "project_admin_user_email" {
+  value = var.project_admin_user_email
+}
+
+output "gh_actions_pipeline_service_account_email" {
   value = var.gh_actions_pipeline_service_account_email
 }
 

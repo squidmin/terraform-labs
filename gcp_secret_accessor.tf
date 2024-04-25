@@ -76,7 +76,7 @@ resource "google_secret_manager_secret_iam_policy" "gemini_api_key_policy" {
         role    = "roles/secretmanager.secretAccessor"
         members = [
           "user:${var.project_admin_user_email}",
-          "serviceAccount:${var.default_compute_engine_service_account}",
+          "serviceAccount:${var.default_compute_engine_service_account_email}",
           "serviceAccount:${var.gemini_api_backend_service_account_email}"
         ]
       }
@@ -92,7 +92,7 @@ resource "google_secret_manager_secret_iam_binding" "secret_accessor" {
 
   members = [
     "user:${var.project_admin_user_email}",
-    "serviceAccount:${var.default_compute_engine_service_account}",
+    "serviceAccount:${var.default_compute_engine_service_account_email}",
     "serviceAccount:${var.gemini_api_backend_service_account_email}"
   ]
 }
