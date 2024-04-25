@@ -29,6 +29,12 @@ variable "itera_backend_service_account_email" {
   default     = "itera-backend-sa@lofty-root-378503.iam.gserviceaccount.com"
 }
 
+variable "gemini_api_backend_service_account_email" {
+  type        = string
+  description = "The service account email"
+  default     = "gemini-api-backend-sa@lofty-root-378503.iam.gserviceaccount.com"
+}
+
 variable "signed_url_generator_service_account_email" {
   type        = string
   description = "The service account email for the signed url generator"
@@ -53,4 +59,9 @@ variable "gke_cluster_name" {
 variable "openai_api_key_secret_name" {
     description = "The name of the secret that stores the OpenAI API key"
     default     = "openai-api-key"
+}
+
+variable "gemini_api_key_secret_name" {
+  description = "The name of the secret that stores the Gemini API key"
+  default     = "gemini-api-key"
 }
