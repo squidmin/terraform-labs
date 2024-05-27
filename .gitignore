@@ -42,6 +42,52 @@ terraform-provider-*
 *.key
 *.pub
 
-# Add additional files / directories to ignore below this line
+# .idea
 .idea
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+env/
+
+# Sphinx build directories
+_build/
+doctrees/
+html/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS-generated files
 .DS_Store
+Thumbs.db
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Generated documentation
+*.rst~
+*.md~
+*.old
+
+# Miscellaneous
+*.out
+*.err
