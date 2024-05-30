@@ -88,6 +88,15 @@ htmlcov/
 *.md~
 *.old
 
+# bin directory
+bin/
+
+# include directory
+include/
+
+# site-packages
+lib/python3.12/site-packages/
+
 # Miscellaneous
 *.out
 *.err
