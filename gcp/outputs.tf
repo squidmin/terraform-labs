@@ -34,6 +34,10 @@ output "signed_url_generator_service_account_email" {
   value = var.signed_url_generator_service_account_email
 }
 
+output "discord_app_server_service_account_email" {
+  value = google_service_account.discord_app_server_sa.email
+}
+
 output "github_actions_pipeline_credentials_path" {
   value = var.github_actions_pipeline_credentials_path
 }
