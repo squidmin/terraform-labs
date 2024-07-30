@@ -1,14 +1,14 @@
-resource "google_pubsub_topic" "test_topic" {
-  project = var.project_id
-  name = "test-topic"
-}
+#resource "google_pubsub_topic" "test_topic" {
+#  project = var.project_id
+#  name = "test-topic"
+#}
 
 // Pull subscription
-resource "google_pubsub_subscription" "example_subscription" {
-  project = var.project_id
-  name  = "test-subscription"
-  topic = google_pubsub_topic.test_topic.name
-}
+#resource "google_pubsub_subscription" "example_subscription" {
+#  project = var.project_id
+#  name  = "test-subscription"
+#  topic = google_pubsub_topic.test_topic.name
+#}
 
 // Push subscription
 #resource "google_pubsub_subscription" "test_subscription" {
