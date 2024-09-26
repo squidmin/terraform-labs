@@ -7,8 +7,6 @@ Visit the [Terraform website](https://www.terraform.io/).
 | Name      | Description                      |
 |-----------|----------------------------------|
 | `default` | The default workspace            |
-| `dev`     | The `dev` environment workspace  |
-| `prod`    | The `prod` environment workspace |
 
 ### Switching workspaces
 
@@ -19,7 +17,7 @@ terraform workspace select workspace_name
 Example:
 
 ```bash
-terraform workspace select dev
+terraform workspace select default
 ```
 
 ## Build documentation
